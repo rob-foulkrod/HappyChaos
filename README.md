@@ -40,6 +40,8 @@ To use the MCP server with GitHub Copilot in VS Code, add the following to your 
 | **DeleteTask** | Delete a task by ID | `id` (required): Task ID |
 | **GetTaskSummary** | Get a summary with counts by status, overdue, and due soon | _(none)_ |
 | **SearchTasks** | Search tasks by keyword in title, description, and assignee | `keyword` (required): Search term |
+| **ExportBackup** | Export all tasks as a JSON backup (includes tasks and categories) | _(none)_ |
+| **RestoreBackup** | Restore tasks from a JSON backup (replaces all existing tasks) | `backupJson` (required): JSON string from ExportBackup |
 
 ### Task Model
 

@@ -223,4 +223,48 @@ public class TaskTools
             Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
         });
     }
+
+    [McpServerTool, Description("Export all tasks as a backup. Returns a JSON backup containing all tasks and their distinct categories.")]
+    public static string ExportBackup(TodoService todoService)
+    {
+        var backup = todoService.Export();
+        return System.Text.Json.JsonSerializer.Serialize(backup, new System.Text.Json.JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+        });
+    }
+
+    [McpServerTool, Description("Restore tasks from a backup. Replaces all existing tasks with the provided backup data. The backup should be a JSON string previously obtained from ExportBackup.")]
+    public static string RestoreBackup(
+        TodoService todoService,
+        [Description("JSON string of the backup data (as returned by ExportBackup)")] string backupJson)
+    {
+        if (string.IsNullOrWhiteSpace(backupJson))
+        {
+            return "Error: Backup JSON data is required.";
+        }
+
+        TodoBackup? backup;
+        try
+        {
+            backup = System.Text.Json.JsonSerializer.Deserialize<TodoBackup>(backupJson, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+            });
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            return $"Error: Invalid backup JSON format. {ex.Message}";
+        }
+
+        if (backup is null)
+        {
+            return "Error: Backup data could not be parsed.";
+        }
+
+        todoService.Import(backup);
+        return $"Restore completed successfully. {backup.Tasks.Count} task(s) restored.";
+    }
 }
