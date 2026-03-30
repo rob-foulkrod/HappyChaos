@@ -4,230 +4,80 @@ namespace HappyChaos.Todo.Services;
 
 public class TodoService
 {
-    private static readonly List<TodoTask> _tasks = new();
-    private static int _nextId = 1;
-    private static readonly object _lock = new();
+    private readonly ITodoRepository _repository;
 
-    public TodoService()
+    public TodoService(ITodoRepository repository)
     {
-        // Seed with sample data if empty
-        lock (_lock)
-        {
-            if (_tasks.Count == 0)
-            {
-                SeedData();
-            }
-        }
+        _repository = repository;
     }
 
-    private static void SeedData()
+    public async Task<IEnumerable<TodoTask>> GetAllAsync()
+        => await _repository.GetAllAsync();
+
+    public async Task<IEnumerable<TodoTask>> GetByStatusAsync(Models.TaskStatus status)
+        => await _repository.GetByStatusAsync(status);
+
+    public async Task<TodoTask?> GetByIdAsync(int id)
+        => await _repository.GetByIdAsync(id);
+
+    public async Task<TodoTask> AddAsync(TodoTask task)
+        => await _repository.AddAsync(task);
+
+    public async Task<bool> UpdateAsync(TodoTask task)
+        => await _repository.UpdateAsync(task);
+
+    public async Task<bool> DeleteAsync(int id)
+        => await _repository.DeleteAsync(id);
+
+    public async Task<bool> ToggleCompleteAsync(int id)
     {
-        var now = DateTime.UtcNow;
-        _tasks.AddRange(new[]
-        {
-            new TodoTask
-            {
-                Id = _nextId++,
-                Title = "Set up Azure DevOps Pipeline",
-                Description = "Configure CI/CD pipeline for automatic deployments to Azure App Service.",
-                Priority = TaskPriority.High,
-                Status = Models.TaskStatus.InProgress,
-                DueDate = now.AddDays(5),
-                AssignedTo = "Team",
-                Category = "DevOps",
-                CreatedAt = now.AddDays(-3),
-                UpdatedAt = now.AddDays(-1)
-            },
-            new TodoTask
-            {
-                Id = _nextId++,
-                Title = "Design database schema",
-                Description = "Create Entity Framework models and migrations for multi-user support.",
-                Priority = TaskPriority.High,
-                Status = Models.TaskStatus.NotStarted,
-                DueDate = now.AddDays(7),
-                AssignedTo = "Team",
-                Category = "Backend",
-                CreatedAt = now.AddDays(-2),
-                UpdatedAt = now.AddDays(-2)
-            },
-            new TodoTask
-            {
-                Id = _nextId++,
-                Title = "Implement user authentication",
-                Description = "Add ASP.NET Core Identity for multi-user sign-in support.",
-                Priority = TaskPriority.Medium,
-                Status = Models.TaskStatus.NotStarted,
-                DueDate = now.AddDays(14),
-                AssignedTo = "Team",
-                Category = "Security",
-                CreatedAt = now.AddDays(-1),
-                UpdatedAt = now.AddDays(-1)
-            },
-            new TodoTask
-            {
-                Id = _nextId++,
-                Title = "Write unit tests",
-                Description = "Add xUnit test project and write tests for all controllers and services.",
-                Priority = TaskPriority.Medium,
-                Status = Models.TaskStatus.NotStarted,
-                DueDate = now.AddDays(10),
-                AssignedTo = "Team",
-                Category = "Testing",
-                CreatedAt = now,
-                UpdatedAt = now
-            },
-            new TodoTask
-            {
-                Id = _nextId++,
-                Title = "Review project requirements",
-                Description = "Walk through the project requirements with the class and confirm scope.",
-                Priority = TaskPriority.Low,
-                Status = Models.TaskStatus.Completed,
-                DueDate = now.AddDays(-2),
-                AssignedTo = "Team",
-                Category = "Planning",
-                CreatedAt = now.AddDays(-7),
-                UpdatedAt = now.AddDays(-2)
-            }
-        });
+        var task = await _repository.GetByIdAsync(id);
+        if (task == null) return false;
+
+        task.Status = task.Status == Models.TaskStatus.Completed
+            ? Models.TaskStatus.InProgress
+            : Models.TaskStatus.Completed;
+        task.UpdatedAt = DateTime.UtcNow;
+
+        return await _repository.UpdateAsync(task);
     }
 
-    public IEnumerable<TodoTask> GetAll() 
+    public async Task<TaskSummary> GetSummaryAsync()
     {
-        lock (_lock)
+        var tasks = (await _repository.GetAllAsync()).ToList();
+        return new TaskSummary
         {
-            return _tasks.ToList();
-        }
+            Total = tasks.Count,
+            NotStarted = tasks.Count(t => t.Status == Models.TaskStatus.NotStarted),
+            InProgress = tasks.Count(t => t.Status == Models.TaskStatus.InProgress),
+            OnHold = tasks.Count(t => t.Status == Models.TaskStatus.OnHold),
+            Completed = tasks.Count(t => t.Status == Models.TaskStatus.Completed),
+            Overdue = tasks.Count(t => t.IsOverdue),
+            DueSoon = tasks.Count(t => t.IsDueSoon)
+        };
     }
 
-    public IEnumerable<TodoTask> GetByStatus(Models.TaskStatus status)
+    public async Task<TodoBackup> ExportAsync()
     {
-        lock (_lock)
+        var tasks = (await _repository.GetAllAsync()).ToList();
+        var categories = tasks
+            .Where(t => !string.IsNullOrWhiteSpace(t.Category))
+            .Select(t => t.Category!)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToList();
+
+        return new TodoBackup
         {
-            return _tasks.Where(t => t.Status == status).ToList();
-        }
+            Tasks = tasks,
+            Categories = categories
+        };
     }
 
-    public TodoTask? GetById(int id)
-    {
-        lock (_lock)
-        {
-            return _tasks.FirstOrDefault(t => t.Id == id);
-        }
-    }
-
-    public TodoTask Add(TodoTask task)
-    {
-        lock (_lock)
-        {
-            task.Id = _nextId++;
-            task.CreatedAt = DateTime.UtcNow;
-            task.UpdatedAt = DateTime.UtcNow;
-            _tasks.Add(task);
-            return task;
-        }
-    }
-
-    public bool Update(TodoTask task)
-    {
-        lock (_lock)
-        {
-            var existing = _tasks.FirstOrDefault(t => t.Id == task.Id);
-            if (existing == null) return false;
-
-            existing.Title = task.Title;
-            existing.Description = task.Description;
-            existing.Priority = task.Priority;
-            existing.Status = task.Status;
-            existing.DueDate = task.DueDate;
-            existing.AssignedTo = task.AssignedTo;
-            existing.Category = task.Category;
-            existing.UpdatedAt = DateTime.UtcNow;
-            return true;
-        }
-    }
-
-    public bool Delete(int id)
-    {
-        lock (_lock)
-        {
-            var task = _tasks.FirstOrDefault(t => t.Id == id);
-            if (task == null) return false;
-            _tasks.Remove(task);
-            return true;
-        }
-    }
-
-    public bool ToggleComplete(int id)
-    {
-        lock (_lock)
-        {
-            var task = _tasks.FirstOrDefault(t => t.Id == id);
-            if (task == null) return false;
-            task.Status = task.Status == Models.TaskStatus.Completed
-                ? Models.TaskStatus.InProgress
-                : Models.TaskStatus.Completed;
-            task.UpdatedAt = DateTime.UtcNow;
-            return true;
-        }
-    }
-
-    public TaskSummary GetSummary()
-    {
-        lock (_lock)
-        {
-            return new TaskSummary
-            {
-                Total = _tasks.Count,
-                NotStarted = _tasks.Count(t => t.Status == Models.TaskStatus.NotStarted),
-                InProgress = _tasks.Count(t => t.Status == Models.TaskStatus.InProgress),
-                OnHold = _tasks.Count(t => t.Status == Models.TaskStatus.OnHold),
-                Completed = _tasks.Count(t => t.Status == Models.TaskStatus.Completed),
-                Overdue = _tasks.Count(t => t.IsOverdue),
-                DueSoon = _tasks.Count(t => t.IsDueSoon)
-            };
-        }
-    }
-
-    public TodoBackup Export()
-    {
-        lock (_lock)
-        {
-            var tasks = _tasks.ToList();
-            var categories = tasks
-                .Where(t => !string.IsNullOrWhiteSpace(t.Category))
-                .Select(t => t.Category!)
-                .Distinct()
-                .OrderBy(c => c)
-                .ToList();
-
-            return new TodoBackup
-            {
-                Tasks = tasks,
-                Categories = categories
-            };
-        }
-    }
-
-    public void Import(TodoBackup backup)
+    public async Task ImportAsync(TodoBackup backup)
     {
         ArgumentNullException.ThrowIfNull(backup);
-
-        lock (_lock)
-        {
-            _tasks.Clear();
-
-            if (backup.Tasks.Count > 0)
-            {
-                _tasks.AddRange(backup.Tasks);
-                _nextId = _tasks.Max(t => t.Id) + 1;
-            }
-            else
-            {
-                _nextId = 1;
-            }
-        }
+        await _repository.ReplaceAllAsync(backup.Tasks);
     }
 }
 

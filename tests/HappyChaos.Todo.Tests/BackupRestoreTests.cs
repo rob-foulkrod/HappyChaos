@@ -8,11 +8,10 @@ public class BackupRestoreTests
 {
     private static TodoService CreateServiceWithTasks(List<TodoTask> tasks)
     {
-        var service = new TodoService();
-        // Import the provided tasks to set a known state
-        var backup = new TodoBackup { Tasks = tasks, Categories = new List<string>() };
-        service.Import(backup);
-        return service;
+        var repo = new InMemoryTodoRepository();
+        // Replace seed data with the provided tasks
+        repo.ReplaceAllAsync(tasks).GetAwaiter().GetResult();
+        return new TodoService(repo);
     }
 
     private static List<TodoTask> CreateSampleTasks()
@@ -61,23 +60,23 @@ public class BackupRestoreTests
     }
 
     [Fact]
-    public void Export_ReturnsAllTasks()
+    public async Task Export_ReturnsAllTasks()
     {
         var tasks = CreateSampleTasks();
         var service = CreateServiceWithTasks(tasks);
 
-        var backup = service.Export();
+        var backup = await service.ExportAsync();
 
         Assert.Equal(3, backup.Tasks.Count);
     }
 
     [Fact]
-    public void Export_ReturnsDistinctCategories()
+    public async Task Export_ReturnsDistinctCategories()
     {
         var tasks = CreateSampleTasks();
         var service = CreateServiceWithTasks(tasks);
 
-        var backup = service.Export();
+        var backup = await service.ExportAsync();
 
         Assert.Equal(2, backup.Categories.Count);
         Assert.Contains("DevOps", backup.Categories);
@@ -85,23 +84,23 @@ public class BackupRestoreTests
     }
 
     [Fact]
-    public void Export_CategoriesAreSorted()
+    public async Task Export_CategoriesAreSorted()
     {
         var tasks = CreateSampleTasks();
         var service = CreateServiceWithTasks(tasks);
 
-        var backup = service.Export();
+        var backup = await service.ExportAsync();
 
         Assert.Equal(new List<string> { "Backend", "DevOps" }, backup.Categories);
     }
 
     [Fact]
-    public void Export_PreservesTaskProperties()
+    public async Task Export_PreservesTaskProperties()
     {
         var tasks = CreateSampleTasks();
         var service = CreateServiceWithTasks(tasks);
 
-        var backup = service.Export();
+        var backup = await service.ExportAsync();
 
         var task = backup.Tasks.First(t => t.Title == "Task One");
         Assert.Equal("First task", task.Description);
@@ -112,7 +111,7 @@ public class BackupRestoreTests
     }
 
     [Fact]
-    public void Export_ExcludesNullAndEmptyCategories()
+    public async Task Export_ExcludesNullAndEmptyCategories()
     {
         var tasks = new List<TodoTask>
         {
@@ -123,14 +122,14 @@ public class BackupRestoreTests
         };
         var service = CreateServiceWithTasks(tasks);
 
-        var backup = service.Export();
+        var backup = await service.ExportAsync();
 
         Assert.Single(backup.Categories);
         Assert.Equal("Work", backup.Categories[0]);
     }
 
     [Fact]
-    public void Import_ReplacesExistingTasks()
+    public async Task Import_ReplacesExistingTasks()
     {
         var service = CreateServiceWithTasks(CreateSampleTasks());
 
@@ -141,16 +140,16 @@ public class BackupRestoreTests
         };
         var newBackup = new TodoBackup { Tasks = newTasks, Categories = new List<string> { "New" } };
 
-        service.Import(newBackup);
+        await service.ImportAsync(newBackup);
 
-        var allTasks = service.GetAll().ToList();
+        var allTasks = (await service.GetAllAsync()).ToList();
         Assert.Equal(2, allTasks.Count);
         Assert.Equal("New Task A", allTasks[0].Title);
         Assert.Equal("New Task B", allTasks[1].Title);
     }
 
     [Fact]
-    public void Import_OldTasksAreRemoved()
+    public async Task Import_OldTasksAreRemoved()
     {
         var service = CreateServiceWithTasks(CreateSampleTasks());
 
@@ -163,25 +162,25 @@ public class BackupRestoreTests
             Categories = new List<string>()
         };
 
-        service.Import(newBackup);
+        await service.ImportAsync(newBackup);
 
-        Assert.Null(service.GetById(2));
-        Assert.Null(service.GetById(3));
+        Assert.Null(await service.GetByIdAsync(2));
+        Assert.Null(await service.GetByIdAsync(3));
     }
 
     [Fact]
-    public void Import_EmptyBackupClearsAllTasks()
+    public async Task Import_EmptyBackupClearsAllTasks()
     {
         var service = CreateServiceWithTasks(CreateSampleTasks());
 
-        service.Import(new TodoBackup { Tasks = new List<TodoTask>(), Categories = new List<string>() });
+        await service.ImportAsync(new TodoBackup { Tasks = new List<TodoTask>(), Categories = new List<string>() });
 
-        var allTasks = service.GetAll().ToList();
+        var allTasks = (await service.GetAllAsync()).ToList();
         Assert.Empty(allTasks);
     }
 
     [Fact]
-    public void Import_NewTasksGetCorrectIds()
+    public async Task Import_NewTasksGetCorrectIds()
     {
         var service = CreateServiceWithTasks(CreateSampleTasks());
 
@@ -193,29 +192,29 @@ public class BackupRestoreTests
             },
             Categories = new List<string>()
         };
-        service.Import(newBackup);
+        await service.ImportAsync(newBackup);
 
         // After import, adding a new task should get the next sequential ID
-        var addedTask = service.Add(new TodoTask { Title = "Added After Import" });
+        var addedTask = await service.AddAsync(new TodoTask { Title = "Added After Import" });
         Assert.Equal(51, addedTask.Id);
     }
 
     [Fact]
-    public void Import_ThrowsOnNullBackup()
+    public async Task Import_ThrowsOnNullBackup()
     {
         var service = CreateServiceWithTasks(CreateSampleTasks());
 
-        Assert.Throws<ArgumentNullException>(() => service.Import(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => service.ImportAsync(null!));
     }
 
     [Fact]
-    public void ExportThenImport_RoundTrip_PreservesData()
+    public async Task ExportThenImport_RoundTrip_PreservesData()
     {
         var tasks = CreateSampleTasks();
         var service = CreateServiceWithTasks(tasks);
 
         // Export
-        var backup = service.Export();
+        var backup = await service.ExportAsync();
 
         // Serialize to JSON (simulates saving/loading a file)
         var json = JsonSerializer.Serialize(backup);
@@ -225,10 +224,10 @@ public class BackupRestoreTests
         Assert.NotNull(restoredBackup);
 
         // Import into a fresh state
-        service.Import(restoredBackup);
+        await service.ImportAsync(restoredBackup);
 
         // Verify all tasks are preserved
-        var restoredTasks = service.GetAll().ToList();
+        var restoredTasks = (await service.GetAllAsync()).ToList();
         Assert.Equal(tasks.Count, restoredTasks.Count);
 
         for (int i = 0; i < tasks.Count; i++)
@@ -244,12 +243,12 @@ public class BackupRestoreTests
     }
 
     [Fact]
-    public void ExportThenImport_RoundTrip_JsonContainsCategoriesAndTasks()
+    public async Task ExportThenImport_RoundTrip_JsonContainsCategoriesAndTasks()
     {
         var tasks = CreateSampleTasks();
         var service = CreateServiceWithTasks(tasks);
 
-        var backup = service.Export();
+        var backup = await service.ExportAsync();
         var json = JsonSerializer.Serialize(backup);
 
         // Verify the JSON document contains both tasks and categories keys
@@ -261,18 +260,18 @@ public class BackupRestoreTests
     }
 
     [Fact]
-    public void Export_WithNoTasks_ReturnsEmptyBackup()
+    public async Task Export_WithNoTasks_ReturnsEmptyBackup()
     {
         var service = CreateServiceWithTasks(new List<TodoTask>());
 
-        var backup = service.Export();
+        var backup = await service.ExportAsync();
 
         Assert.Empty(backup.Tasks);
         Assert.Empty(backup.Categories);
     }
 
     [Fact]
-    public void Import_PreservesTaskDueDates()
+    public async Task Import_PreservesTaskDueDates()
     {
         var dueDate = new DateTime(2026, 6, 15, 0, 0, 0, DateTimeKind.Utc);
         var tasks = new List<TodoTask>
@@ -281,13 +280,13 @@ public class BackupRestoreTests
         };
         var service = CreateServiceWithTasks(tasks);
 
-        var backup = service.Export();
+        var backup = await service.ExportAsync();
         var json = JsonSerializer.Serialize(backup);
         var restoredBackup = JsonSerializer.Deserialize<TodoBackup>(json)!;
 
-        service.Import(restoredBackup);
+        await service.ImportAsync(restoredBackup);
 
-        var restored = service.GetById(1);
+        var restored = await service.GetByIdAsync(1);
         Assert.NotNull(restored);
         Assert.Equal(dueDate, restored.DueDate);
     }

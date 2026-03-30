@@ -4,6 +4,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Register storage provider based on configuration
+var storageProvider = builder.Configuration.GetValue<string>("Storage:Provider") ?? "InMemory";
+switch (storageProvider)
+{
+    case "Blob":
+        builder.Services.AddSingleton<ITodoRepository, BlobStorageTodoRepository>();
+        break;
+    default:
+        builder.Services.AddSingleton<ITodoRepository, InMemoryTodoRepository>();
+        break;
+}
 builder.Services.AddSingleton<TodoService>();
 
 // Add MCP server with HTTP transport (unauthenticated)
@@ -34,6 +46,6 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 // Map MCP endpoint for AI tool integration
-app.MapMcp();
+app.MapMcp("/mcp");
 
 app.Run();

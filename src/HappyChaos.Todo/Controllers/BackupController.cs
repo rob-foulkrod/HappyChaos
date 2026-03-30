@@ -17,22 +17,22 @@ public class BackupController : ControllerBase
 
     // GET: api/backup
     [HttpGet]
-    public ActionResult<TodoBackup> Export()
+    public async Task<ActionResult<TodoBackup>> Export()
     {
-        var backup = _todoService.Export();
+        var backup = await _todoService.ExportAsync();
         return Ok(backup);
     }
 
     // POST: api/backup/restore
     [HttpPost("restore")]
-    public IActionResult Restore([FromBody] TodoBackup? backup)
+    public async Task<IActionResult> Restore([FromBody] TodoBackup? backup)
     {
         if (backup == null)
         {
             return BadRequest("Backup data is required.");
         }
 
-        _todoService.Import(backup);
+        await _todoService.ImportAsync(backup);
         return Ok(new { message = "Restore completed successfully.", taskCount = backup.Tasks.Count });
     }
 }

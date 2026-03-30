@@ -1,3 +1,4 @@
+@inject IConfiguration Configuration
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,11 +92,46 @@
 
     <footer class="app-footer py-3 mt-auto">
         <div class="container-fluid px-4">
+            @{
+                var storageProvider = Configuration["Storage:Provider"] ?? "InMemory";
+                var instanceId = Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID");
+                var isAzure = !string.IsNullOrEmpty(instanceId);
+                var shortInstanceId = isAzure ? instanceId!.Substring(0, Math.Min(8, instanceId!.Length)) : null;
+            }
+            @if (storageProvider == "InMemory")
+            {
+                <div class="alert alert-warning d-flex align-items-center gap-2 mb-2 py-2 small" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div>
+                        <strong>InMemory provider active.</strong> Data is not persisted and will be lost on restart.
+                        Not suitable for production use.
+                    </div>
+                </div>
+            }
+            else if (storageProvider == "Blob" && isAzure)
+            {
+                <div class="alert alert-info d-flex align-items-center gap-2 mb-2 py-2 small" role="alert">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <div>
+                        <strong>Blob provider</strong> &mdash; concurrency is protected in-process only.
+                        If scaled to multiple instances, consider switching to Cosmos DB.
+                    </div>
+                </div>
+            }
             <div class="d-flex justify-content-between align-items-center text-muted small">
                 <span>&copy; @DateTime.Now.Year HappyChaos &mdash; Class TODO Tracker</span>
-                <span class="d-flex align-items-center gap-1">
-                    <i class="bi bi-cloud-check text-primary"></i>
-                    <span>Azure Hosted</span>
+                <span class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary">@storageProvider</span>
+                    @if (isAzure)
+                    {
+                        <span class="badge bg-dark" title="Instance ID: @instanceId">
+                            <i class="bi bi-hdd-rack me-1"></i>@shortInstanceId
+                        </span>
+                    }
+                    <span class="d-flex align-items-center gap-1">
+                        <i class="bi bi-cloud-check text-primary"></i>
+                        <span>Azure Hosted</span>
+                    </span>
                 </span>
             </div>
         </div>

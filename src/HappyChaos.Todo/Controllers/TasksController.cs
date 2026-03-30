@@ -16,9 +16,9 @@ public class TasksController : Controller
     }
 
     // GET: Tasks - Current Project (all tasks dashboard)
-    public IActionResult Index(string? filter, string? category, string? search)
+    public async Task<IActionResult> Index(string? filter, string? category, string? search)
     {
-        var tasks = _todoService.GetAll();
+        var tasks = (await _todoService.GetAllAsync()).AsEnumerable();
 
         // Apply filter
         if (!string.IsNullOrEmpty(filter))
@@ -61,14 +61,14 @@ public class TasksController : Controller
                      .ThenByDescending(t => (int)t.Priority)
                      .ThenBy(t => t.DueDate ?? DateTime.MaxValue);
 
-        var allTasks = _todoService.GetAll();
+        var allTasks = await _todoService.GetAllAsync();
         var categories = allTasks.Where(t => !string.IsNullOrEmpty(t.Category))
                                   .Select(t => t.Category!)
                                   .Distinct()
                                   .OrderBy(c => c)
                                   .ToList();
 
-        ViewBag.Summary = _todoService.GetSummary();
+        ViewBag.Summary = await _todoService.GetSummaryAsync();
         ViewBag.Filter = filter;
         ViewBag.Category = category;
         ViewBag.Search = search;
@@ -79,9 +79,9 @@ public class TasksController : Controller
     }
 
     // GET: Tasks/Details/5
-    public IActionResult Details(int id)
+    public async Task<IActionResult> Details(int id)
     {
-        var task = _todoService.GetById(id);
+        var task = await _todoService.GetByIdAsync(id);
         if (task == null)
         {
             return NotFound();
@@ -98,11 +98,11 @@ public class TasksController : Controller
     // POST: Tasks/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Create(TodoTask task)
+    public async Task<IActionResult> Create(TodoTask task)
     {
         if (ModelState.IsValid)
         {
-            _todoService.Add(task);
+            await _todoService.AddAsync(task);
             TempData["Success"] = $"Task \"{task.Title}\" was created successfully!";
             return RedirectToAction(nameof(Index));
         }
@@ -110,9 +110,9 @@ public class TasksController : Controller
     }
 
     // GET: Tasks/Edit/5
-    public IActionResult Edit(int id)
+    public async Task<IActionResult> Edit(int id)
     {
-        var task = _todoService.GetById(id);
+        var task = await _todoService.GetByIdAsync(id);
         if (task == null)
         {
             return NotFound();
@@ -123,7 +123,7 @@ public class TasksController : Controller
     // POST: Tasks/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Edit(int id, TodoTask task)
+    public async Task<IActionResult> Edit(int id, TodoTask task)
     {
         if (id != task.Id)
         {
@@ -132,7 +132,7 @@ public class TasksController : Controller
 
         if (ModelState.IsValid)
         {
-            var updated = _todoService.Update(task);
+            var updated = await _todoService.UpdateAsync(task);
             if (!updated)
             {
                 return NotFound();
@@ -144,9 +144,9 @@ public class TasksController : Controller
     }
 
     // GET: Tasks/Delete/5
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var task = _todoService.GetById(id);
+        var task = await _todoService.GetByIdAsync(id);
         if (task == null)
         {
             return NotFound();
@@ -157,11 +157,11 @@ public class TasksController : Controller
     // POST: Tasks/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
-    public IActionResult DeleteConfirmed(int id)
+    public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var task = _todoService.GetById(id);
+        var task = await _todoService.GetByIdAsync(id);
         var title = task?.Title ?? "Task";
-        var deleted = _todoService.Delete(id);
+        var deleted = await _todoService.DeleteAsync(id);
         if (!deleted)
         {
             return NotFound();
@@ -173,9 +173,9 @@ public class TasksController : Controller
     // POST: Tasks/ToggleComplete/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult ToggleComplete(int id)
+    public async Task<IActionResult> ToggleComplete(int id)
     {
-        _todoService.ToggleComplete(id);
+        await _todoService.ToggleCompleteAsync(id);
         return RedirectToAction(nameof(Index));
     }
 }

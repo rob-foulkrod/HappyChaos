@@ -60,6 +60,67 @@ Each task has the following properties:
 | `CreatedAt` | DateTime | UTC timestamp when created |
 | `UpdatedAt` | DateTime | UTC timestamp when last updated |
 
+## Configuration
+
+All settings live in `appsettings.json` (or per-environment overrides like `appsettings.Development.json`) and can be overridden via environment variables using the standard `__` separator (e.g., `Storage__Provider`).
+
+### General
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `DEFAULT_MESSAGE` | string | `"Welcome to HappyChaos Todo!"` | Message displayed on the home page |
+
+### Storage Provider (`Storage` section)
+
+| Setting | Values | Default | Description |
+|---------|--------|---------|-------------|
+| `Storage:Provider` | `InMemory`, `Blob` | `InMemory` | Which storage backend to use |
+
+#### InMemory (default)
+
+No additional settings required. Data is held in memory and lost on restart. Starts with 5 seed tasks.
+
+#### Azure Blob Storage (`Storage:Provider` = `Blob`)
+
+Tasks are persisted as a single JSON blob in Azure Blob Storage. Auth is determined by which settings are present:
+
+| Setting | Required | Default | Description |
+|---------|----------|---------|-------------|
+| `Storage:BlobStorage:AccountName` | Yes (if no `ConnectionString`) | — | Azure Storage account name. Used with `DefaultAzureCredential` (Managed Identity, Azure CLI, VS login, etc.) |
+| `Storage:BlobStorage:ConnectionString` | No | — | Connection string for shared key or Azurite. **If set, takes priority over `AccountName`/DAC.** Use `UseDevelopmentStorage=true` for Azurite. |
+| `Storage:BlobStorage:ContainerName` | No | `todo-tasks` | Blob container name (created automatically if missing) |
+| `Storage:BlobStorage:BlobName` | No | `tasks.json` | Name of the JSON blob inside the container |
+
+**Auth priority:**
+1. If `ConnectionString` is set → connection string / shared key auth (Azurite, legacy)
+2. Otherwise → `DefaultAzureCredential` using `AccountName` (Managed Identity, `az login`, VS credentials, etc.)
+
+**Example — production (DAC via Managed Identity):**
+
+```json
+{
+  "Storage": {
+    "Provider": "Blob",
+    "BlobStorage": {
+      "AccountName": "mystorageaccount"
+    }
+  }
+}
+```
+
+**Example — local dev with Azurite:**
+
+```json
+{
+  "Storage": {
+    "Provider": "Blob",
+    "BlobStorage": {
+      "ConnectionString": "UseDevelopmentStorage=true"
+    }
+  }
+}
+```
+
 ## Running Locally
 
 ```bash

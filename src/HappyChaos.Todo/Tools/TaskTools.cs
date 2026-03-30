@@ -9,7 +9,7 @@ namespace HappyChaos.Todo.Tools;
 public class TaskTools
 {
     [McpServerTool, Description("Get all tasks. Optionally filter by status (NotStarted, InProgress, OnHold, Completed).")]
-    public static string GetTasks(
+    public static async Task<string> GetTasks(
         TodoService todoService,
         [Description("Optional status filter: NotStarted, InProgress, OnHold, or Completed")] string? status = null)
     {
@@ -17,11 +17,11 @@ public class TaskTools
 
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<Models.TaskStatus>(status, ignoreCase: true, out var parsedStatus))
         {
-            tasks = todoService.GetByStatus(parsedStatus);
+            tasks = await todoService.GetByStatusAsync(parsedStatus);
         }
         else
         {
-            tasks = todoService.GetAll();
+            tasks = await todoService.GetAllAsync();
         }
 
         var taskList = tasks.ToList();
@@ -38,11 +38,11 @@ public class TaskTools
     }
 
     [McpServerTool, Description("Get a specific task by its ID.")]
-    public static string GetTaskById(
+    public static async Task<string> GetTaskById(
         TodoService todoService,
         [Description("The ID of the task to retrieve")] int id)
     {
-        var task = todoService.GetById(id);
+        var task = await todoService.GetByIdAsync(id);
         if (task is null)
         {
             return $"Task with ID {id} not found.";
@@ -56,7 +56,7 @@ public class TaskTools
     }
 
     [McpServerTool, Description("Add a new task. Returns the created task with its assigned ID.")]
-    public static string AddTask(
+    public static async Task<string> AddTask(
         TodoService todoService,
         [Description("Title of the task (required, 2-200 characters)")] string title,
         [Description("Description of the task (optional, max 1000 characters)")] string? description = null,
@@ -94,7 +94,7 @@ public class TaskTools
             task.DueDate = parsedDate;
         }
 
-        var created = todoService.Add(task);
+        var created = await todoService.AddAsync(task);
 
         return System.Text.Json.JsonSerializer.Serialize(created, new System.Text.Json.JsonSerializerOptions
         {
@@ -104,7 +104,7 @@ public class TaskTools
     }
 
     [McpServerTool, Description("Edit an existing task by ID. Only provided fields will be updated.")]
-    public static string EditTask(
+    public static async Task<string> EditTask(
         TodoService todoService,
         [Description("The ID of the task to edit")] int id,
         [Description("New title (optional, 2-200 characters)")] string? title = null,
@@ -115,7 +115,7 @@ public class TaskTools
         [Description("New assignee (optional, max 100 characters)")] string? assignedTo = null,
         [Description("New category (optional, max 100 characters)")] string? category = null)
     {
-        var existing = todoService.GetById(id);
+        var existing = await todoService.GetByIdAsync(id);
         if (existing is null)
         {
             return $"Task with ID {id} not found.";
@@ -160,13 +160,13 @@ public class TaskTools
             existing.Category = category;
         }
 
-        var updated = todoService.Update(existing);
+        var updated = await todoService.UpdateAsync(existing);
         if (!updated)
         {
             return $"Failed to update task with ID {id}.";
         }
 
-        var refreshed = todoService.GetById(id);
+        var refreshed = await todoService.GetByIdAsync(id);
         return System.Text.Json.JsonSerializer.Serialize(refreshed, new System.Text.Json.JsonSerializerOptions
         {
             WriteIndented = true,
@@ -175,20 +175,20 @@ public class TaskTools
     }
 
     [McpServerTool, Description("Delete a task by its ID.")]
-    public static string DeleteTask(
+    public static async Task<string> DeleteTask(
         TodoService todoService,
         [Description("The ID of the task to delete")] int id)
     {
-        var deleted = todoService.Delete(id);
+        var deleted = await todoService.DeleteAsync(id);
         return deleted
             ? $"Task with ID {id} has been deleted."
             : $"Task with ID {id} not found.";
     }
 
     [McpServerTool, Description("Get a summary of all tasks including counts by status, overdue, and due soon.")]
-    public static string GetTaskSummary(TodoService todoService)
+    public static async Task<string> GetTaskSummary(TodoService todoService)
     {
-        var summary = todoService.GetSummary();
+        var summary = await todoService.GetSummaryAsync();
         return System.Text.Json.JsonSerializer.Serialize(summary, new System.Text.Json.JsonSerializerOptions
         {
             WriteIndented = true
@@ -196,7 +196,7 @@ public class TaskTools
     }
 
     [McpServerTool, Description("Search tasks by keyword. Searches in title, description, and assignee fields.")]
-    public static string SearchTasks(
+    public static async Task<string> SearchTasks(
         TodoService todoService,
         [Description("The keyword to search for in task title, description, and assignee")] string keyword)
     {
@@ -205,7 +205,8 @@ public class TaskTools
             return "Error: Search keyword is required.";
         }
 
-        var tasks = todoService.GetAll()
+        var allTasks = await todoService.GetAllAsync();
+        var tasks = allTasks
             .Where(t =>
                 (t.Title?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (t.Description?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
@@ -225,9 +226,9 @@ public class TaskTools
     }
 
     [McpServerTool, Description("Export all tasks as a backup. Returns a JSON backup containing all tasks and their distinct categories.")]
-    public static string ExportBackup(TodoService todoService)
+    public static async Task<string> ExportBackup(TodoService todoService)
     {
-        var backup = todoService.Export();
+        var backup = await todoService.ExportAsync();
         return System.Text.Json.JsonSerializer.Serialize(backup, new System.Text.Json.JsonSerializerOptions
         {
             WriteIndented = true,
@@ -236,7 +237,7 @@ public class TaskTools
     }
 
     [McpServerTool, Description("Restore tasks from a backup. Replaces all existing tasks with the provided backup data. The backup should be a JSON string previously obtained from ExportBackup.")]
-    public static string RestoreBackup(
+    public static async Task<string> RestoreBackup(
         TodoService todoService,
         [Description("JSON string of the backup data (as returned by ExportBackup)")] string backupJson)
     {
@@ -264,7 +265,7 @@ public class TaskTools
             return "Error: Backup data could not be parsed.";
         }
 
-        todoService.Import(backup);
+        await todoService.ImportAsync(backup);
         return $"Restore completed successfully. {backup.Tasks.Count} task(s) restored.";
     }
 }
