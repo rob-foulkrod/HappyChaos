@@ -189,6 +189,46 @@ public class TodoService
             };
         }
     }
+
+    public TodoBackup Export()
+    {
+        lock (_lock)
+        {
+            var tasks = _tasks.ToList();
+            var categories = tasks
+                .Where(t => !string.IsNullOrWhiteSpace(t.Category))
+                .Select(t => t.Category!)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+
+            return new TodoBackup
+            {
+                Tasks = tasks,
+                Categories = categories
+            };
+        }
+    }
+
+    public void Import(TodoBackup backup)
+    {
+        ArgumentNullException.ThrowIfNull(backup);
+
+        lock (_lock)
+        {
+            _tasks.Clear();
+
+            if (backup.Tasks.Count > 0)
+            {
+                _tasks.AddRange(backup.Tasks);
+                _nextId = _tasks.Max(t => t.Id) + 1;
+            }
+            else
+            {
+                _nextId = 1;
+            }
+        }
+    }
 }
 
 public class TaskSummary
