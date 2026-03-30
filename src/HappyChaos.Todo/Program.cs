@@ -34,6 +34,6 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 // Map MCP endpoint for AI tool integration
-app.MapMcp();
+app.MapMcp("/mcp");
 
 app.Run();
