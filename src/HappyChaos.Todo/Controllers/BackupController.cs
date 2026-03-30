@@ -25,7 +25,7 @@ public class BackupController : ControllerBase
 
     // POST: api/backup/restore
     [HttpPost("restore")]
-    public IActionResult Restore([FromBody] TodoBackup backup)
+    public IActionResult Restore([FromBody] TodoBackup? backup)
     {
         if (backup == null)
         {
