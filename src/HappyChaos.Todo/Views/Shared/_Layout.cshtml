@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - HappyChaos TODO</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/HappyChaos.Todo.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-dark app-navbar shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Tasks" asp-action="Index">
+                    <i class="bi bi-check2-circle fs-4"></i>
+                    <span class="fw-bold">HappyChaos</span>
+                    <span class="badge bg-white text-primary ms-1 small">TODO</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Tasks" asp-action="Index">
+                                <i class="bi bi-kanban me-1"></i>Current Projects
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Tasks" asp-action="Create">
+                                <i class="bi bi-plus-circle me-1"></i>Add Task
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-funnel me-1"></i>Filter
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Tasks" asp-action="Index">
+                                    <i class="bi bi-list-task me-2 text-secondary"></i>All Tasks</a></li>
+                                <li><a class="dropdown-item" asp-controller="Tasks" asp-action="Index" asp-route-filter="active">
+                                    <i class="bi bi-play-circle me-2 text-info"></i>Active</a></li>
+                                <li><a class="dropdown-item" asp-controller="Tasks" asp-action="Index" asp-route-filter="high">
+                                    <i class="bi bi-exclamation-triangle me-2 text-warning"></i>High Priority</a></li>
+                                <li><a class="dropdown-item" asp-controller="Tasks" asp-action="Index" asp-route-filter="overdue">
+                                    <i class="bi bi-alarm me-2 text-danger"></i>Overdue</a></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item" asp-controller="Tasks" asp-action="Index" asp-route-filter="completed">
+                                    <i class="bi bi-check2-all me-2 text-success"></i>Completed</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Privacy">
+                                <i class="bi bi-shield-check me-1"></i>Privacy
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid py-3 px-4 flex-grow-1">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+                <i class="bi bi-check-circle-fill fs-5"></i>
+                <div>@TempData["Success"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                <div>@TempData["Error"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="app-footer py-3 mt-auto">
+        <div class="container-fluid px-4">
+            <div class="d-flex justify-content-between align-items-center text-muted small">
+                <span>&copy; @DateTime.Now.Year HappyChaos &mdash; Class TODO Tracker</span>
+                <span class="d-flex align-items-center gap-1">
+                    <i class="bi bi-cloud-check text-primary"></i>
+                    <span>Azure Hosted</span>
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

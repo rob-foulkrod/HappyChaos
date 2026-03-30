@@ -1,0 +1,262 @@
+/* =========================================
+   HappyChaos TODO - Custom Theme
+   Color Palette: Teal / Cyan / Green
+   ========================================= */
+
+:root {
+    --primary: #0d9488;
+    --primary-dark: #0f766e;
+    --primary-light: #ccfbf1;
+    --accent: #06b6d4;
+    --accent-dark: #0891b2;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --info: #0ea5e9;
+    --body-bg: #f0fdfa;
+    --card-bg: #ffffff;
+    --navbar-bg: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+    --footer-bg: #f8fafc;
+}
+
+/* Global */
+body {
+    background-color: var(--body-bg);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #1e293b;
+}
+
+/* Navbar */
+.app-navbar {
+    background: var(--navbar-bg) !important;
+    padding: 0.6rem 1rem;
+}
+
+.app-navbar .navbar-brand {
+    font-size: 1.25rem;
+    letter-spacing: -0.5px;
+}
+
+.app-navbar .nav-link {
+    color: rgba(255,255,255,0.9) !important;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link.active {
+    background: rgba(255,255,255,0.2);
+    color: #fff !important;
+}
+
+.app-navbar .dropdown-menu {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    padding: 0.5rem;
+}
+
+.app-navbar .dropdown-item {
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+}
+
+.app-navbar .dropdown-item:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+}
+
+/* Footer */
+.app-footer {
+    background-color: var(--footer-bg);
+    border-top: 1px solid #e2e8f0;
+}
+
+/* Page Headings */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin: 0;
+}
+
+/* Summary Cards */
+.stat-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: transform 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.stat-card .card-body {
+    padding: 1.25rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+    margin-top: 0.25rem;
+}
+
+/* Task Cards */
+.task-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    margin-bottom: 0.75rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border-left: 4px solid transparent;
+    background: var(--card-bg);
+}
+
+.task-card:hover {
+    transform: translateX(2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.task-card.priority-critical { border-left-color: #7c3aed; }
+.task-card.priority-high     { border-left-color: var(--danger); }
+.task-card.priority-medium   { border-left-color: var(--warning); }
+.task-card.priority-low      { border-left-color: var(--info); }
+.task-card.status-completed  { opacity: 0.65; border-left-color: var(--success); }
+.task-card.is-overdue        { background-color: #fff5f5; }
+
+.task-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1e293b;
+}
+
+.task-title.completed {
+    text-decoration: line-through;
+    color: #94a3b8;
+}
+
+/* Priority Badges */
+.badge-priority-critical { background-color: #7c3aed; color: #fff; }
+.badge-priority-high     { background-color: var(--danger); color: #fff; }
+.badge-priority-medium   { background-color: var(--warning); color: #fff; }
+.badge-priority-low      { background-color: var(--info); color: #fff; }
+
+/* Status Badges */
+.badge-status-notstarted { background-color: #64748b; color: #fff; }
+.badge-status-inprogress { background-color: var(--accent); color: #fff; }
+.badge-status-onhold     { background-color: var(--warning); color: #fff; }
+.badge-status-completed  { background-color: var(--success); color: #fff; }
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Form Controls */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.2);
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    font-weight: 600;
+}
+
+/* Filter bar */
+.filter-bar {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    margin-bottom: 1.25rem;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #94a3b8;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #cbd5e1;
+}
+
+/* Due date indicators */
+.due-date-overdue { color: var(--danger); font-weight: 600; }
+.due-date-soon    { color: var(--warning); font-weight: 600; }
+.due-date-ok      { color: #64748b; }
+
+/* Detail view */
+.detail-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.detail-value {
+    font-size: 1rem;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+/* Responsive tweaks */
+@media (max-width: 576px) {
+    .page-title { font-size: 1.4rem; }
+    .stat-number { font-size: 1.6rem; }
+}

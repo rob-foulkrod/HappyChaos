@@ -1,0 +1,136 @@
+@model HappyChaos.Todo.Models.TodoTask
+@using HappyChaos.Todo.Models
+@{
+    ViewData["Title"] = "Add Task";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-plus-circle me-2" style="color: var(--primary)"></i>Add New Task
+        </h1>
+        <p class="text-muted mb-0 small">Create a new task for the class project tracker</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to Projects</span>
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 col-xl-7">
+        <div class="card">
+            <div class="card-header" style="background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;">
+                <i class="bi bi-clipboard-plus me-2"></i>Task Details
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-4">
+                        <label asp-for="Title" class="form-label fw-semibold">
+                            <i class="bi bi-type me-1 text-muted"></i>Task Title <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Title" class="form-control form-control-lg" placeholder="e.g. Implement user authentication" autofocus />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label fw-semibold">
+                            <i class="bi bi-text-paragraph me-1 text-muted"></i>Description
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="3"
+                                  placeholder="Describe what needs to be done..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                        <div class="form-text">Optional — add details, context, or acceptance criteria.</div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <label asp-for="Priority" class="form-label fw-semibold">
+                                <i class="bi bi-flag me-1 text-muted"></i>Priority <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Priority" class="form-select"
+                                    asp-items="Html.GetEnumSelectList<TaskPriority>()"></select>
+                            <span asp-validation-for="Priority" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="Status" class="form-label fw-semibold">
+                                <i class="bi bi-activity me-1 text-muted"></i>Status <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Status" class="form-select"
+                                    asp-items="Html.GetEnumSelectList<HappyChaos.Todo.Models.TaskStatus>()"></select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <label asp-for="DueDate" class="form-label fw-semibold">
+                                <i class="bi bi-calendar-event me-1 text-muted"></i>Due Date
+                            </label>
+                            <input asp-for="DueDate" class="form-control" type="date" />
+                            <span asp-validation-for="DueDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="AssignedTo" class="form-label fw-semibold">
+                                <i class="bi bi-person me-1 text-muted"></i>Assigned To
+                            </label>
+                            <input asp-for="AssignedTo" class="form-control" placeholder="e.g. Team, Alice, Bob" />
+                            <span asp-validation-for="AssignedTo" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Category" class="form-label fw-semibold">
+                            <i class="bi bi-tag me-1 text-muted"></i>Category
+                        </label>
+                        <input asp-for="Category" class="form-control" placeholder="e.g. Backend, Frontend, DevOps, Design" />
+                        <span asp-validation-for="Category" class="text-danger small"></span>
+                        <div class="form-text">Group related tasks by category for easier filtering.</div>
+                    </div>
+
+                    <div class="d-flex gap-3 pt-2">
+                        <button type="submit" class="btn btn-primary btn-lg d-flex align-items-center gap-2">
+                            <i class="bi bi-check-lg"></i>
+                            Create Task
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-xl-5">
+        <div class="card">
+            <div class="card-header bg-light">
+                <i class="bi bi-info-circle me-2 text-primary"></i>Priority Guide
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-3 d-flex gap-2">
+                        <span class="badge badge-priority-critical mt-1" style="height:fit-content">Critical</span>
+                        <span class="text-muted small">Blocking issue — must be resolved immediately. Project cannot proceed without it.</span>
+                    </li>
+                    <li class="mb-3 d-flex gap-2">
+                        <span class="badge badge-priority-high mt-1" style="height:fit-content">High</span>
+                        <span class="text-muted small">Important for the sprint or deadline. Should be addressed before lower-priority items.</span>
+                    </li>
+                    <li class="mb-3 d-flex gap-2">
+                        <span class="badge badge-priority-medium mt-1" style="height:fit-content">Medium</span>
+                        <span class="text-muted small">Standard work item. Plan to complete within the current iteration.</span>
+                    </li>
+                    <li class="d-flex gap-2">
+                        <span class="badge badge-priority-low mt-1" style="height:fit-content">Low</span>
+                        <span class="text-muted small">Nice to have. Can be deferred if higher priority work takes precedence.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
