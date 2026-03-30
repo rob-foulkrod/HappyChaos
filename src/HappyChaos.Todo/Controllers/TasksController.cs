@@ -7,10 +7,12 @@ namespace HappyChaos.Todo.Controllers;
 public class TasksController : Controller
 {
     private readonly TodoService _todoService;
+    private readonly IConfiguration _configuration;
 
-    public TasksController(TodoService todoService)
+    public TasksController(TodoService todoService, IConfiguration configuration)
     {
         _todoService = todoService;
+        _configuration = configuration;
     }
 
     // GET: Tasks - Current Project (all tasks dashboard)
@@ -71,6 +73,7 @@ public class TasksController : Controller
         ViewBag.Category = category;
         ViewBag.Search = search;
         ViewBag.Categories = categories;
+        ViewBag.DefaultMessage = _configuration["DEFAULT_MESSAGE"];
 
         return View(tasks.ToList());
     }
