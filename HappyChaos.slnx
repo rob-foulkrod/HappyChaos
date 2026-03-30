@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/HappyChaos.Todo/HappyChaos.Todo.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HappyChaos.Todo.Tests/HappyChaos.Todo.Tests.csproj" />
+  </Folder>
 </Solution>
