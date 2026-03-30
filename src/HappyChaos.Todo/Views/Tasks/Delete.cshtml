@@ -1,0 +1,76 @@
+@model HappyChaos.Todo.Models.TodoTask
+@using HappyChaos.Todo.Models
+@{
+    ViewData["Title"] = "Delete Task";
+
+    string StatusLabel(HappyChaos.Todo.Models.TaskStatus s) => s switch
+    {
+        HappyChaos.Todo.Models.TaskStatus.NotStarted => "Not Started",
+        HappyChaos.Todo.Models.TaskStatus.InProgress => "In Progress",
+        HappyChaos.Todo.Models.TaskStatus.OnHold => "On Hold",
+        HappyChaos.Todo.Models.TaskStatus.Completed => "Completed",
+        _ => s.ToString()
+    };
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title text-danger">
+            <i class="bi bi-trash me-2"></i>Delete Task
+        </h1>
+        <p class="text-muted mb-0 small">This action cannot be undone</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+        <i class="bi bi-arrow-left"></i><span>Back to Projects</span>
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-warning d-flex gap-2 mb-4">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 mt-1"></i>
+                    <div>
+                        <strong>Are you sure?</strong> You are about to permanently delete this task. This action cannot be undone.
+                    </div>
+                </div>
+
+                <div class="bg-light rounded p-3 mb-4">
+                    <h5 class="fw-bold mb-2">@Model.Title</h5>
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p class="text-muted small mb-2">@Model.Description</p>
+                    }
+                    <div class="d-flex flex-wrap gap-2 text-muted" style="font-size: 0.85rem">
+                        <span><i class="bi bi-flag me-1"></i>@Model.Priority priority</span>
+                        <span><i class="bi bi-activity me-1"></i>@StatusLabel(Model.Status)</span>
+                        @if (!string.IsNullOrEmpty(Model.Category))
+                        {
+                            <span><i class="bi bi-tag me-1"></i>@Model.Category</span>
+                        }
+                        @if (Model.DueDate.HasValue)
+                        {
+                            <span><i class="bi bi-calendar-event me-1"></i>Due @Model.DueDate.Value.ToString("MMM d, yyyy")</span>
+                        }
+                    </div>
+                </div>
+
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-danger btn-lg d-flex align-items-center gap-2">
+                            <i class="bi bi-trash"></i>
+                            Yes, Delete Task
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

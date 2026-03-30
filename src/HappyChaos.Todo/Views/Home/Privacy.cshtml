@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "Privacy Policy";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-shield-check me-2" style="color: var(--primary)"></i>Privacy Policy
+        </h1>
+        <p class="text-muted mb-0 small">HappyChaos Class TODO Tracker</p>
+    </div>
+    <a asp-controller="Tasks" asp-action="Index" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+        <i class="bi bi-arrow-left"></i><span>Back to Projects</span>
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="alert alert-info d-flex gap-2 mb-4">
+                    <i class="bi bi-info-circle-fill fs-5 mt-1"></i>
+                    <div>This application is currently in <strong>open (no sign-in)</strong> mode. All tasks are shared across all users in a single class project view.</div>
+                </div>
+
+                <h4 class="fw-semibold mb-3">What We Store</h4>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <div>
+                            <strong>Task Data:</strong> Task titles, descriptions, priorities, statuses, due dates, and categories are stored in memory on the server.
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <div>
+                            <strong>No Personal Information:</strong> No user accounts, email addresses, passwords, or personal data are collected at this time.
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <div>
+                            <strong>No Cookies:</strong> This application does not use tracking cookies.
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex gap-2">
+                        <i class="bi bi-info-circle-fill text-warning mt-1"></i>
+                        <div>
+                            <strong>In-Memory Storage:</strong> All task data is stored in application memory and will be reset when the server restarts.
+                        </div>
+                    </li>
+                </ul>
+
+                <h4 class="fw-semibold mb-3">Coming Soon: Multi-User Support</h4>
+                <p class="text-muted">
+                    In a future version, this application will support individual user accounts with sign-in functionality.
+                    At that point, this privacy policy will be updated to reflect the collection and storage of user account data.
+                </p>
+
+                <h4 class="fw-semibold mb-3">Hosted on Azure</h4>
+                <p class="text-muted mb-0">
+                    This application is hosted on Microsoft Azure App Service. Azure's privacy and security practices apply.
+                    For more information, see <a href="https://privacy.microsoft.com" target="_blank" rel="noopener">Microsoft's Privacy Statement</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

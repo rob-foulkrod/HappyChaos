@@ -1,0 +1,297 @@
+@model IEnumerable<HappyChaos.Todo.Models.TodoTask>
+@using HappyChaos.Todo.Models
+@{
+    ViewData["Title"] = "Current Projects";
+    var summary = ViewBag.Summary as HappyChaos.Todo.Services.TaskSummary;
+    var filter = ViewBag.Filter as string;
+    var category = ViewBag.Category as string;
+    var search = ViewBag.Search as string;
+    var categories = ViewBag.Categories as List<string> ?? new List<string>();
+
+    string PriorityClass(TaskPriority p) => p switch
+    {
+        TaskPriority.Critical => "priority-critical",
+        TaskPriority.High => "priority-high",
+        TaskPriority.Medium => "priority-medium",
+        _ => "priority-low"
+    };
+
+    string PriorityBadgeClass(TaskPriority p) => p switch
+    {
+        TaskPriority.Critical => "badge-priority-critical",
+        TaskPriority.High => "badge-priority-high",
+        TaskPriority.Medium => "badge-priority-medium",
+        _ => "badge-priority-low"
+    };
+
+    string PriorityIcon(TaskPriority p) => p switch
+    {
+        TaskPriority.Critical => "bi-fire",
+        TaskPriority.High => "bi-exclamation-triangle-fill",
+        TaskPriority.Medium => "bi-dash-circle-fill",
+        _ => "bi-arrow-down-circle-fill"
+    };
+
+    string StatusBadgeClass(HappyChaos.Todo.Models.TaskStatus s) => s switch
+    {
+        HappyChaos.Todo.Models.TaskStatus.InProgress => "badge-status-inprogress",
+        HappyChaos.Todo.Models.TaskStatus.OnHold => "badge-status-onhold",
+        HappyChaos.Todo.Models.TaskStatus.Completed => "badge-status-completed",
+        _ => "badge-status-notstarted"
+    };
+
+    string StatusLabel(HappyChaos.Todo.Models.TaskStatus s) => s switch
+    {
+        HappyChaos.Todo.Models.TaskStatus.NotStarted => "Not Started",
+        HappyChaos.Todo.Models.TaskStatus.InProgress => "In Progress",
+        HappyChaos.Todo.Models.TaskStatus.OnHold => "On Hold",
+        HappyChaos.Todo.Models.TaskStatus.Completed => "Completed",
+        _ => s.ToString()
+    };
+}
+
+<div class="page-header">
+    <div class="d-flex align-items-center gap-3">
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-kanban me-2" style="color: var(--primary)"></i>Current Projects
+            </h1>
+            <p class="text-muted mb-0 small">Track your class TODO items and project tasks</p>
+        </div>
+    </div>
+    <a asp-action="Create" class="btn btn-primary d-flex align-items-center gap-2">
+        <i class="bi bi-plus-lg"></i>
+        <span>Add Task</span>
+    </a>
+</div>
+
+@if (summary != null)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-action="Index" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #0d9488, #0891b2); color: white;">
+                <div class="card-body text-center">
+                    <div class="stat-number">@summary.Total</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-action="Index" asp-route-filter="active" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #06b6d4, #0ea5e9); color: white;">
+                <div class="card-body text-center">
+                    <div class="stat-number">@(summary.NotStarted + summary.InProgress)</div>
+                    <div class="stat-label">Active</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-action="Index" asp-route-filter="active" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #0ea5e9, #3b82f6); color: white;">
+                <div class="card-body text-center">
+                    <div class="stat-number">@summary.InProgress</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-action="Index" asp-route-filter="completed" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #16a34a, #15803d); color: white;">
+                <div class="card-body text-center">
+                    <div class="stat-number">@summary.Completed</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-action="Index" asp-route-filter="overdue" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: white;">
+                <div class="card-body text-center">
+                    <div class="stat-number">@summary.Overdue</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-action="Index" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #d97706, #b45309); color: white;">
+                <div class="card-body text-center">
+                    <div class="stat-number">@summary.DueSoon</div>
+                    <div class="stat-label">Due Soon</div>
+                </div>
+            </a>
+        </div>
+    </div>
+}
+
+<div class="filter-bar">
+    <form asp-action="Index" method="get" class="d-flex flex-wrap gap-2 align-items-end">
+        <div class="flex-grow-1" style="min-width: 200px">
+            <label class="form-label small fw-semibold text-muted mb-1">Search</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" name="search" value="@search" placeholder="Search tasks..." />
+            </div>
+        </div>
+        @if (categories.Count > 0)
+        {
+            <div style="min-width: 150px">
+                <label class="form-label small fw-semibold text-muted mb-1">Category</label>
+                <select class="form-select" name="category">
+                    <option value="">All Categories</option>
+                    @foreach (var cat in categories)
+                    {
+                        <option value="@cat" selected="@(cat == category)">@cat</option>
+                    }
+                </select>
+            </div>
+        }
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i>Filter
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i>Clear
+            </a>
+        </div>
+    </form>
+</div>
+
+@if (!string.IsNullOrEmpty(filter) || !string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(category))
+{
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="text-muted small">Showing:</span>
+        @if (!string.IsNullOrEmpty(filter))
+        {
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                <i class="bi bi-funnel me-1"></i>@filter
+            </span>
+        }
+        @if (!string.IsNullOrEmpty(category))
+        {
+            <span class="badge bg-info-subtle text-info border border-info-subtle">
+                <i class="bi bi-tag me-1"></i>@category
+            </span>
+        }
+        @if (!string.IsNullOrEmpty(search))
+        {
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                <i class="bi bi-search me-1"></i>"@search"
+            </span>
+        }
+        <span class="text-muted small">— @Model.Count() result(s)</span>
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary ms-1">Clear filters</a>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body empty-state">
+            <i class="bi bi-clipboard-check d-block"></i>
+            <h4 class="mt-2 text-muted">No tasks found</h4>
+            <p class="text-muted">
+                @if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(filter) || !string.IsNullOrEmpty(category))
+                {
+                    <span>No tasks match your current filters.</span>
+                }
+                else
+                {
+                    <span>Get started by adding your first task!</span>
+                }
+            </p>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Add First Task
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="task-list">
+        @foreach (var task in Model)
+        {
+            var cardClass = $"task-card {PriorityClass(task.Priority)} {(task.Status == HappyChaos.Todo.Models.TaskStatus.Completed ? "status-completed" : "")} {(task.IsOverdue ? "is-overdue" : "")}";
+            <div class="@cardClass">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <form asp-action="ToggleComplete" asp-route-id="@task.Id" method="post" class="mt-1">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm p-0 border-0 bg-transparent"
+                                    title="@(task.Status == HappyChaos.Todo.Models.TaskStatus.Completed ? "Mark incomplete" : "Mark complete")" style="width:22px;height:22px">
+                                @if (task.Status == HappyChaos.Todo.Models.TaskStatus.Completed)
+                                {
+                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-circle text-secondary fs-5"></i>
+                                }
+                            </button>
+                        </form>
+
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                <a asp-action="Details" asp-route-id="@task.Id"
+                                   class="task-title @(task.Status == HappyChaos.Todo.Models.TaskStatus.Completed ? "completed" : "") text-decoration-none text-dark">
+                                    @task.Title
+                                </a>
+                                <span class="badge @PriorityBadgeClass(task.Priority) d-flex align-items-center gap-1">
+                                    <i class="bi @PriorityIcon(task.Priority)"></i>
+                                    @task.Priority
+                                </span>
+                                <span class="badge @StatusBadgeClass(task.Status)">@StatusLabel(task.Status)</span>
+                                @if (task.IsOverdue)
+                                {
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-alarm me-1"></i>Overdue
+                                    </span>
+                                }
+                                else if (task.IsDueSoon)
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-clock me-1"></i>Due Soon
+                                    </span>
+                                }
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(task.Description))
+                            {
+                                <p class="text-muted small mb-1 text-truncate" style="max-width: 600px">@task.Description</p>
+                            }
+
+                            <div class="d-flex flex-wrap gap-3 align-items-center text-muted" style="font-size: 0.8rem">
+                                @if (!string.IsNullOrEmpty(task.Category))
+                                {
+                                    <span><i class="bi bi-tag me-1"></i>@task.Category</span>
+                                }
+                                @if (!string.IsNullOrEmpty(task.AssignedTo))
+                                {
+                                    <span><i class="bi bi-person me-1"></i>@task.AssignedTo</span>
+                                }
+                                @if (task.DueDate.HasValue)
+                                {
+                                    var dueCls = task.IsOverdue ? "due-date-overdue" : task.IsDueSoon ? "due-date-soon" : "due-date-ok";
+                                    <span class="@dueCls">
+                                        <i class="bi bi-calendar-event me-1"></i>Due @task.DueDate.Value.ToString("MMM d, yyyy")
+                                    </span>
+                                }
+                                <span><i class="bi bi-clock-history me-1"></i>Updated @task.UpdatedAt.ToString("MMM d")</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-1 ms-2">
+                            <a asp-action="Details" asp-route-id="@task.Id"
+                               class="btn btn-sm btn-outline-secondary" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@task.Id"
+                               class="btn btn-sm btn-outline-primary" title="Edit Task">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@task.Id"
+                               class="btn btn-sm btn-outline-danger" title="Delete Task">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
