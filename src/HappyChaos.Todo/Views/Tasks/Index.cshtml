@@ -87,13 +87,13 @@
         <div class="col-6 col-md-4 col-lg-2">
             <a asp-action="Index" asp-route-filter="active" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #06b6d4, #0ea5e9); color: white;">
                 <div class="card-body text-center">
-                    <div class="stat-number">@(summary.NotStarted + summary.InProgress)</div>
+                    <div class="stat-number">@(summary.NotStarted + summary.InProgress + summary.OnHold)</div>
                     <div class="stat-label">Active</div>
                 </div>
             </a>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
-            <a asp-action="Index" asp-route-filter="active" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #0ea5e9, #3b82f6); color: white;">
+            <a asp-action="Index" asp-route-filter="inprogress" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #0ea5e9, #3b82f6); color: white;">
                 <div class="card-body text-center">
                     <div class="stat-number">@summary.InProgress</div>
                     <div class="stat-label">In Progress</div>
@@ -117,7 +117,7 @@
             </a>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
-            <a asp-action="Index" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #d97706, #b45309); color: white;">
+            <a asp-action="Index" asp-route-filter="duesoon" class="stat-card card d-block text-decoration-none" style="background: linear-gradient(135deg, #d97706, #b45309); color: white;">
                 <div class="card-body text-center">
                     <div class="stat-number">@summary.DueSoon</div>
                     <div class="stat-label">Due Soon</div>
@@ -129,6 +129,10 @@
 
 <div class="filter-bar">
     <form asp-action="Index" method="get" class="d-flex flex-wrap gap-2 align-items-end">
+        @if (!string.IsNullOrEmpty(filter))
+        {
+            <input type="hidden" name="filter" value="@filter" />
+        }
         <div class="flex-grow-1" style="min-width: 200px">
             <label class="form-label small fw-semibold text-muted mb-1">Search</label>
             <div class="input-group">

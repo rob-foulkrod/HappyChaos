@@ -28,11 +28,17 @@ public class TasksController : Controller
                 case "active":
                     tasks = tasks.Where(t => t.Status != Models.TaskStatus.Completed);
                     break;
+                case "inprogress":
+                    tasks = tasks.Where(t => t.Status == Models.TaskStatus.InProgress);
+                    break;
                 case "completed":
                     tasks = tasks.Where(t => t.Status == Models.TaskStatus.Completed);
                     break;
                 case "overdue":
                     tasks = tasks.Where(t => t.IsOverdue);
+                    break;
+                case "duesoon":
+                    tasks = tasks.Where(t => t.IsDueSoon);
                     break;
                 case "high":
                     tasks = tasks.Where(t => t.Priority == TaskPriority.High || t.Priority == TaskPriority.Critical);
